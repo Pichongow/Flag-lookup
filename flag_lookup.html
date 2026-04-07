@@ -7943,26 +7943,32 @@ document.getElementById('btn').addEventListener('click',()=>showFlag(document.ge
 document.getElementById('inp').addEventListener('keydown',e=>{if(e.key==='Enter')showFlag(e.target.value);});
 document.getElementById('inp').addEventListener('input',e=>suggest(e.target.value));
 
-// 音声認識 - 日本語・英語両対応（2回認識方式）
+// 音声認識 - 見つかるまで自動ループモード
 const micBtn = document.getElementById('mic');
 const micStatus = document.getElementById('mic-status');
-let listening = false;
-let retrying = false;
+let active = false;   // ループ全体のON/OFF
+let retrying = false; // 英語再試行中フラグ
+let currentRec = null;
+let attemptCount = 0;
 
 if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
   function startRecognition(lang) {
+    if (!active) return;
     const rec = new SpeechRecognition();
     rec.continuous = false;
     rec.interimResults = false;
-    rec.maxAlternatives = 3;
+    rec.maxAlternatives = 5;
     rec.lang = lang;
+    currentRec = rec;
 
     rec.onstart = () => {
-      listening = true;
       micBtn.classList.add('listening');
-      micStatus.textContent = lang === 'ja-JP' ? '🎤 聞いています（日本語）...' : '🎤 聞いています（English）...';
+      const langLabel = lang === 'ja-JP' ? '日本語' : 'English';
+      micStatus.textContent = attemptCount === 0
+        ? `🎤 聞いています（${langLabel}）...`
+        : `🎤 もう一度どうぞ（${langLabel}）... [${attemptCount}回目]`;
     };
 
     rec.onresult = (e) => {
@@ -7976,47 +7982,68 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
       document.getElementById('inp').value = transcript;
 
       if (found) {
-        micStatus.textContent = `認識: 「${transcript}」`;
+        // 国旗が見つかった → 表示して終了
+        micStatus.textContent = `✅ 認識: 「${transcript}」`;
         showFlag(transcript);
-        retrying = false;
+        stopAll();
       } else if (!retrying && lang === 'ja-JP') {
-        // 日本語で見つからなければ英語で再試行
+        // 日本語で見つからなければ英語で即再試行（カウントなし）
         retrying = true;
-        micStatus.textContent = `「${transcript}」→ 英語で再試行中...`;
+        micStatus.textContent = `「${transcript}」→ 英語で再試行...`;
         startRecognition('en-US');
       } else {
-        micStatus.textContent = `「${transcript}」は見つかりませんでした`;
-        showFlag(transcript);
+        // 英語でも見つからなければ再度日本語からループ
         retrying = false;
+        attemptCount++;
+        micStatus.textContent = `「${transcript}」は見つかりません。もう一度どうぞ...`;
+        setTimeout(() => { if (active) startRecognition('ja-JP'); }, 800);
       }
     };
 
     rec.onerror = (e) => {
-      micStatus.textContent = e.error === 'no-speech' ? '音声が聞き取れませんでした' :
-                              e.error === 'not-allowed' ? 'マイクの使用を許可してください' :
-                              `エラー: ${e.error}`;
-      micBtn.classList.remove('listening');
-      listening = false;
+      if (!active) return;
+      if (e.error === 'not-allowed') {
+        micStatus.textContent = 'マイクの使用を許可してください';
+        stopAll();
+        return;
+      }
+      // no-speech等はそのまま再試行
       retrying = false;
+      attemptCount++;
+      micStatus.textContent = `聞き取れませんでした。もう一度どうぞ... [${attemptCount}回目]`;
+      setTimeout(() => { if (active) startRecognition('ja-JP'); }, 600);
     };
 
     rec.onend = () => {
-      micBtn.classList.remove('listening');
-      listening = false;
+      // active中は onresult/onerror 側でループするので何もしない
     };
 
     rec.start();
-    return rec;
   }
 
-  let currentRec = null;
+  function stopAll() {
+    active = false;
+    retrying = false;
+    attemptCount = 0;
+    if (currentRec) { try { currentRec.stop(); } catch(e){} }
+    micBtn.classList.remove('listening');
+    micBtn.textContent = '🎤';
+    micBtn.title = '音声入力';
+  }
+
   micBtn.addEventListener('click', () => {
-    if (listening) {
-      if (currentRec) currentRec.stop();
-      retrying = false;
+    if (active) {
+      // もう一度押したら停止
+      micStatus.textContent = '停止しました';
+      stopAll();
     } else {
+      // 開始
+      active = true;
+      attemptCount = 0;
       retrying = false;
-      currentRec = startRecognition('ja-JP');
+      micBtn.textContent = '⏹';
+      micBtn.title = 'クリックで停止';
+      startRecognition('ja-JP');
     }
   });
 

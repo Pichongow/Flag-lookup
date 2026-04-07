@@ -7879,12 +7879,25 @@ const BASE_W = 360;
 const jaMap={}, enMap={}, codeMap={};
 for (const r of db) { jaMap[r[0]]=r; enMap[r[1].toLowerCase()]=r; codeMap[r[2]]=r; }
 
+function normalize(s) {
+  // 中点・スペース・長音符などを除去して正規化
+  return s.replace(/[・・\s·]/g, '');
+}
+
 function lookup(q) {
   const s=q.trim(), sl=s.toLowerCase();
+  const sn=normalize(s), sln=normalize(sl);
   if (jaMap[s]) return jaMap[s];
   if (enMap[sl]) return enMap[sl];
   if (aliases[sl] && codeMap[aliases[sl]]) return codeMap[aliases[sl]];
-  for (const r of db) { if (r[0].includes(s)||r[1].toLowerCase().includes(sl)) return r; }
+  // 正規化（・を除去）して再検索
+  for (const r of db) {
+    if (normalize(r[0])===sn || normalize(r[1].toLowerCase())===sln) return r;
+  }
+  for (const r of db) {
+    if (r[0].includes(s)||r[1].toLowerCase().includes(sl)) return r;
+    if (normalize(r[0]).includes(sn)||normalize(r[1].toLowerCase()).includes(sln)) return r;
+  }
   return null;
 }
 

@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>国旗プロジェクト 手順書</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap');
+
+:root {
+  --navy: #1e3a5f;
+  --blue: #2563eb;
+  --light-blue: #eff6ff;
+  --accent: #3b82f6;
+  --green: #059669;
+  --light-green: #ecfdf5;
+  --orange: #d97706;
+  --light-orange: #fffbeb;
+  --red: #dc2626;
+  --gray-50: #f8fafc;
+  --gray-100: #f1f5f9;
+  --gray-200: #e2e8f0;
+  --gray-400: #94a3b8;
+  --gray-600: #475569;
+  --gray-800: #1e293b;
+  --border: #e2e8f0;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Noto Sans JP', sans-serif;
+  background: var(--gray-50);
+  color: var(--gray-800);
+  line-height: 1.8;
+}
+
+/* ヘッダー */
+header {
+  background: var(--navy);
+  color: #fff;
+  padding: 3rem 2rem 2rem;
+  position: relative;
+  overflow: hidden;
+}
+header::before {
+  content: '🌍';
+  position: absolute;
+  right: 2rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 8rem;
+  opacity: 0.08;
+}
+header h1 { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+header p  { font-size: 14px; color: #94a3b8; }
+header .badges { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+header .badge {
+  background: rgba(255,255,255,0.15);
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  color: #e2e8f0;
+}
+
+/* メインレイアウト */
+main {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 4rem;
+}
+
+/* セクション */
+section { margin-bottom: 2.5rem; }
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--navy);
+  margin-bottom: 1rem;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--border);
+}
+.section-title .icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--light-blue);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+}
+
+/* カード */
+.card {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.2rem 1.5rem;
+  margin-bottom: 12px;
+}
+.card-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--navy);
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.card-title .tag {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: var(--light-blue);
+  color: var(--accent);
+}
+.card-title .tag.green { background: var(--light-green); color: var(--green); }
+.card-title .tag.orange { background: var(--light-orange); color: var(--orange); }
+.card p { font-size: 13px; color: var(--gray-600); margin-bottom: 6px; }
+.card p:last-child { margin-bottom: 0; }
+
+/* URL表示 */
+.url-box {
+  background: var(--gray-100);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  color: var(--blue);
+  word-break: break-all;
+  margin-top: 8px;
+}
+.url-box a { color: var(--blue); text-decoration: none; }
+.url-box a:hover { text-decoration: underline; }
+
+/* ステップリスト */
+.steps { list-style: none; }
+.steps li {
+  display: flex;
+  gap: 14px;
+  margin-bottom: 14px;
+  align-items: flex-start;
+}
+.steps li .num {
+  width: 26px;
+  height: 26px;
+  min-width: 26px;
+  background: var(--navy);
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  margin-top: 2px;
+}
+.steps li .content { font-size: 13px; color: var(--gray-600); }
+.steps li .content strong { color: var(--gray-800); }
+
+/* テーブル */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+thead th {
+  background: var(--navy);
+  color: #fff;
+  padding: 10px 14px;
+  text-align: left;
+  font-weight: 600;
+}
+tbody td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  color: var(--gray-600);
+  vertical-align: top;
+}
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:nth-child(even) { background: var(--gray-50); }
+td.label { font-weight: 600; color: var(--gray-800); white-space: nowrap; }
+code {
+  font-family: 'JetBrains Mono', monospace;
+  background: var(--gray-100);
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+  color: var(--navy);
+}
+
+/* 注意・メモボックス */
+.note {
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 13px;
+  margin-bottom: 12px;
+  display: flex;
+  gap: 10px;
+}
+.note.blue { background: var(--light-blue); border-left: 4px solid var(--accent); color: #1e40af; }
+.note.green { background: var(--light-green); border-left: 4px solid var(--green); color: #065f46; }
+.note.orange { background: var(--light-orange); border-left: 4px solid var(--orange); color: #92400e; }
+.note .icon { font-size: 16px; min-width: 20px; }
+
+/* フッター */
+footer {
+  text-align: center;
+  font-size: 12px;
+  color: var(--gray-400);
+  padding: 2rem;
+  border-top: 1px solid var(--border);
+  margin-top: 2rem;
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🌍 国旗プロジェクト 手順書</h1>
+  <p>新チャットへの引き継ぎ用ドキュメント</p>
+  <div class="badges">
+    <span class="badge">作成日: 2026年4月</span>
+    <span class="badge">197か国対応</span>
+    <span class="badge">音声認識対応</span>
+    <span class="badge">GitHub Pages公開済み</span>
+  </div>
+</header>
+
+<main>
+
+<!-- 1. 成果物一覧 -->
+<section>
+  <div class="section-title">
+    <div class="icon">📁</div>
+    成果物ファイル一覧
+  </div>
+
+  <div class="card">
+    <div class="card-title">flag_lookup.html <span class="tag">メインツール</span></div>
+    <p>国名を入力または音声で話しかけると国旗を表示するルックアップツール。</p>
+    <p>日本語・英語の手入力と音声入力（🎤 日本語 / 🎤 English の2ボタン）に対応。国旗表示と同時に面積（日本比）・人口を表示する。</p>
+    <div class="url-box">
+      <a href="https://pichongow.github.io/Flag-lookup/flag_lookup.html" target="_blank">
+        https://pichongow.github.io/Flag-lookup/flag_lookup.html
+      </a>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">flag_list.html <span class="tag green">一覧表</span></div>
+    <p>197か国の国旗・英語名・日本語名・ISO・正式縦横比を一覧表示するHTMLファイル。英語名アルファベット順。</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">world_flags.xlsx <span class="tag orange">Excel</span></div>
+    <p>国旗画像・英語名・日本語名・ISO・正式比率・面積（日本比）・人口を含むExcelファイル。タイトルと出典を上部に記載。</p>
+  </div>
+</section>
+
+<!-- 2. GitHub情報 -->
+<section>
+  <div class="section-title">
+    <div class="icon">🐙</div>
+    GitHub情報
+  </div>
+  <table>
+    <tbody>
+      <tr><td class="label">リポジトリ</td><td><a href="https://github.com/pichongow/Flag-lookup">github.com/pichongow/Flag-lookup</a></td></tr>
+      <tr><td class="label">公開URL</td><td><code>https://pichongow.github.io/Flag-lookup/flag_lookup.html</code></td></tr>
+      <tr><td class="label">ユーザー名</td><td>Pichongow</td></tr>
+      <tr><td class="label">ブランチ</td><td>main</td></tr>
+    </tbody>
+  </table>
+
+  <div class="note blue" style="margin-top:12px;">
+    <span class="icon">ℹ️</span>
+    <span>GitHubへのアップロード手順: リポジトリページ → Add file → Upload files → ドラッグ&ドロップ → Commit changes。更新後は <strong>Ctrl+Shift+R</strong> で強制リロード。</span>
+  </div>
+</section>
+
+<!-- 3. flag_lookup.html の機能詳細 -->
+<section>
+  <div class="section-title">
+    <div class="icon">🔍</div>
+    flag_lookup.html 機能詳細
+  </div>
+
+  <table>
+    <thead><tr><th>機能</th><th>説明</th></tr></thead>
+    <tbody>
+      <tr><td class="label">手入力検索</td><td>入力欄に国名を入力してEnterキーで表示。日本語・英語両対応。入力欄クリックで前の入力が自動クリア。</td></tr>
+      <tr><td class="label">入力候補</td><td>入力中に候補が表示される。日本語入力→日本語候補、英語入力→英語候補。</td></tr>
+      <tr><td class="label">音声入力（日本語）</td><td>🎤 日本語ボタン：日本語専用ループ認識。見つかるまで自動で繰り返す。</td></tr>
+      <tr><td class="label">音声入力（英語）</td><td>🎤 Englishボタン：英語専用ループ認識。見つかるまで自動で繰り返す。</td></tr>
+      <tr><td class="label">国旗表示</td><td>各国の正式縦横比でBOX表示。SVGはflag-iconsライブラリのもの（4:3固定）をpreserveAspectRatio="xMidYMid meet"で表示。</td></tr>
+      <tr><td class="label">面積・人口</td><td>国旗下に面積（km²・日本比）と人口を表示。データはCIA World Factbook / World Bank 2023年頃。</td></tr>
+      <tr><td class="label">別名対応</td><td>USA、英、米、Deutschland、Nipponなど多数の別名・略称に対応。中点「・」なしでも認識。</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- 4. 技術的注意点 -->
+<section>
+  <div class="section-title">
+    <div class="icon">⚙️</div>
+    技術的注意点
+  </div>
+
+  <div class="note orange">
+    <span class="icon">⚠️</span>
+    <span><strong>flag-iconsのSVGについて：</strong>全国旗のSVGは<code>viewBox="0 0 640 480"</code>（4:3）で統一されており、描画内容も4:3座標系で描かれている。viewBoxを変更すると国旗の一部が切れるため、<code>preserveAspectRatio="xMidYMid meet"</code>でBOX内に収める方式を採用。BOXサイズを各国の正式比率に設定することで縦横比を表現している。</span>
+  </div>
+
+  <div class="note blue">
+    <span class="icon">🎤</span>
+    <span><strong>音声認識について：</strong>Web Speech APIはHTTPS環境でのみ動作（file://不可）。ChromeとSafariで動作、Firefoxは非対応。音声認識はループモードで動作し、国旗が見つかるまで自動で繰り返す。入力欄クリックや別ボタン押下で停止。</span>
+  </div>
+
+  <div class="note green">
+    <span class="icon">📦</span>
+    <span><strong>使用ライブラリ：</strong>flag-icons v7.2.3（SVGデータをHTMLに直接埋め込み済み。外部CDN不使用・オフライン動作）。Excelファイル生成にはopenpyxl・cairosvgを使用。</span>
+  </div>
+
+  <table style="margin-top:12px;">
+    <thead><tr><th>データ</th><th>内容</th></tr></thead>
+    <tbody>
+      <tr><td class="label">対応国数</td><td>197か国（国連加盟194 + パレスチナ・コソボ・台湾）</td></tr>
+      <tr><td class="label">人口データ</td><td>実数（人）で格納。バチカン約800人、ナウル約1万人など</td></tr>
+      <tr><td class="label">面積データ</td><td>km²。日本基準値 = 377,975 km²</td></tr>
+      <tr><td class="label">出典</td><td>CIA World Factbook / World Bank (2023年頃)</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- 5. GitHubアップロード手順 -->
+<section>
+  <div class="section-title">
+    <div class="icon">🚀</div>
+    GitHubアップロード手順
+  </div>
+  <ul class="steps">
+    <li><div class="num">1</div><div class="content">Claudeから最新の<strong>flag_lookup.html</strong>をダウンロード</div></li>
+    <li><div class="num">2</div><div class="content"><strong>https://github.com/pichongow/Flag-lookup</strong> を開く</div></li>
+    <li><div class="num">3</div><div class="content"><strong>Add file → Upload files</strong> をクリック</div></li>
+    <li><div class="num">4</div><div class="content">ダウンロードした <code>flag_lookup.html</code> をドラッグ＆ドロップ</div></li>
+    <li><div class="num">5</div><div class="content"><strong>Commit changes</strong> をクリック（同名ファイルは自動上書き）</div></li>
+
+  </ul>
+</section>
+
+<!-- 6. 改善候補 -->
+<section>
+  <div class="section-title">
+    <div class="icon">💡</div>
+    今後の改善候補
+  </div>
+  <div class="card">
+    <p>・首都・通貨・言語などの情報を追加する</p>
+    <p>・国旗一覧をクリックしてlookupに連携させる</p>
+    <p>・人口・面積データを最新化する仕組みを追加する</p>
+    <p>・スマートフォン表示のレイアウト最適化</p>
+  </div>
+</section>
+
+<!-- 7. 新チャット開始時の伝達事項 -->
+<section>
+  <div class="section-title">
+    <div class="icon">💬</div>
+    新チャット開始時にClaudeへ伝えること
+  </div>
+  <div class="note blue">
+    <span class="icon">📋</span>
+    <span>
+      「国旗プロジェクトの続きです。この手順書を参照してください。<br>
+      GitHubリポジトリ: https://github.com/pichongow/Flag-lookup<br>
+      公開URL: https://pichongow.github.io/Flag-lookup/flag_lookup.html」
+    </span>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  国旗プロジェクト手順書 ・ 作成: Claude (Anthropic) ・ 2026年4月
+</footer>
+
+</body>
+</html>

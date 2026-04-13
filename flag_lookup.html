@@ -37,6 +37,9 @@ h1 { font-size: 20px; font-weight: 600; color: #1a1a1a; margin-bottom: 1.5rem; }
 #siblings { margin-top: 14px; text-align: center; }
 #siblings-label { font-size: 11px; color: #94a3b8; margin-bottom: 6px; }
 #siblings-list { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+#pop-siblings { margin-top: 12px; text-align: center; }
+#pop-siblings-label { font-size: 11px; color: #94a3b8; margin-bottom: 6px; }
+#pop-siblings-list { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
 .sib-btn {
   display: flex; flex-direction: column; align-items: center; gap: 3px;
   cursor: pointer; border: 1px solid #e2e8f0; border-radius: 8px;
@@ -73,6 +76,10 @@ h1 { font-size: 20px; font-weight: 600; color: #1a1a1a; margin-bottom: 1.5rem; }
     <div id="siblings">
       <div id="siblings-label"></div>
       <div id="siblings-list"></div>
+    </div>
+    <div id="pop-siblings">
+      <div id="pop-siblings-label"></div>
+      <div id="pop-siblings-list"></div>
     </div>
   </div>
 </div>
@@ -8059,6 +8066,7 @@ function showFlag(q) {
     }
     // 兄弟国（面積±3%以内）を表示
     showSiblings(code, d ? d[0] : 0);
+    showPopSiblings(code, d ? d[1] : 0);
   } else {
     box.style.width = '360px';
     box.style.height = '240px';
@@ -8067,6 +8075,8 @@ function showFlag(q) {
     document.getElementById('stats').innerHTML='';
     document.getElementById('siblings-label').textContent='';
     document.getElementById('siblings-list').innerHTML='';
+    document.getElementById('pop-siblings-label').textContent='';
+    document.getElementById('pop-siblings-list').innerHTML='';
   }
 }
 
@@ -8095,8 +8105,8 @@ function showSiblings(currentCode, area) {
 
   if (sibs.length === 0) return;
 
-  // 面積差が小さい順にソート
-  sibs.sort((a, b) => Math.abs(a.area - area) - Math.abs(b.area - area));
+  // 面積が大きい順にソート
+  sibs.sort((a, b) => b.area - a.area);
 
   labelEl.textContent = '📐 面積が近い国';
 
@@ -8122,6 +8132,73 @@ function showSiblings(currentCode, area) {
     const nameDiv = document.createElement('div');
     nameDiv.className = 'sib-name';
     nameDiv.textContent = r[0]; // 日本語名
+
+    btn.appendChild(flagDiv);
+    btn.appendChild(nameDiv);
+    btn.addEventListener('click', () => {
+      document.getElementById('inp').value = r[0];
+      showFlag(r[0]);
+    });
+    listEl.appendChild(btn);
+  }
+}
+
+function showPopSiblings(currentCode, pop) {
+  const labelEl = document.getElementById('pop-siblings-label');
+  const listEl  = document.getElementById('pop-siblings-list');
+  listEl.innerHTML = '';
+  labelEl.textContent = '';
+
+  if (!pop || pop === 0) return;
+
+  // 人口規模に応じてマージンを段階設定
+  // 1万人以下: ±50%、100万人以下: ±10%、それ以上: ±4%
+  const MARGIN = pop <= 10000 ? 0.50 : pop <= 1000000 ? 0.10 : 0.04;
+  const min = pop * (1 - MARGIN);
+  const max = pop * (1 + MARGIN);
+
+  const sibs = [];
+  for (const [code, data] of Object.entries(COUNTRY_DATA)) {
+    if (code === currentCode) continue;
+    if (!data[1] || data[1] === 0) continue;
+    if (!SVG_FLAGS[code]) continue;
+    if (data[1] >= min && data[1] <= max) {
+      sibs.push({ code, pop: data[1] });
+    }
+  }
+
+  if (sibs.length === 0) return;
+
+  // 人口が多い順にソート
+  sibs.sort((a, b) => b.pop - a.pop);
+
+  labelEl.textContent = '👥 人口が近い国';
+
+  for (const sib of sibs) {
+    const r = db.find(row => row[2] === sib.code);
+    if (!r) continue;
+    const ratio = FLAG_RATIOS[sib.code] || 1.5;
+    const W = 64;
+    const H = Math.round(W / ratio);
+
+    const btn = document.createElement('div');
+    btn.className = 'sib-btn';
+    const popStr = sib.pop < 10000     ? `約${sib.pop}人`
+                 : sib.pop < 100000000 ? `約${Math.floor(sib.pop/10000)}万人`
+                 : `約${(sib.pop/100000000).toFixed(2)}億人`;
+    btn.title = `${r[1]}  (${popStr})`;
+
+    const flagDiv = document.createElement('div');
+    flagDiv.className = 'sib-flag';
+    flagDiv.style.width  = W + 'px';
+    flagDiv.style.height = H + 'px';
+    flagDiv.innerHTML = SVG_FLAGS[sib.code];
+    const svg = flagDiv.querySelector('svg');
+    if (svg) { svg.style.width = W + 'px'; svg.style.height = H + 'px'; }
+
+    const nameDiv = document.createElement('div');
+    nameDiv.className = 'sib-name';
+    nameDiv.textContent = r[0];
 
     btn.appendChild(flagDiv);
     btn.appendChild(nameDiv);

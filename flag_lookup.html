@@ -32,8 +32,8 @@ h1 { font-size: 20px; font-weight: 600; color: #1a1a1a; margin-bottom: 1.5rem; }
 #name-ja { font-size: 14px; color: #666; margin-top: 4px; }
 #hint { font-size: 12px; color: #aaa; margin-top: 6px; }
 #ratio-info { font-size: 12px; color: #94a3b8; margin-top: 4px; }
-#stats { font-size: 13px; color: #475569; margin-top: 8px; display: flex; justify-content: center; gap: 24px; }
-#stats span { background: #f1f5f9; padding: 4px 12px; border-radius: 8px; }
+#stats { font-size: 13px; color: #475569; margin-top: 8px; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+#stats span { background: #f1f5f9; padding: 4px 12px; border-radius: 8px; display: flex; align-items: center; gap: 4px; }
 #siblings { margin-top: 14px; text-align: center; }
 #siblings-label { font-size: 11px; color: #94a3b8; margin-bottom: 6px; }
 #siblings-list { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
@@ -8059,8 +8059,33 @@ function showFlag(q) {
                 : d[1] < 10000     ? `約${Math.floor(d[1]/1000)}千人`
                 : d[1] < 100000000 ? `約${Math.floor(d[1]/10000)}万人`
                 : `約${(d[1]/100000000).toFixed(2)}億人`;
+
+      // 面積・人口・人口密度ランキングを計算
+      const ranks = calcRanks();
+      const areaRank    = ranks.area[code];
+      const popRank     = ranks.pop[code];
+      const densityRank = ranks.density[code];
+      const total       = ranks.total;
+
+      const rankBadge = (rank) => {
+        if (!rank) return '';
+        const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : '';
+        return `<span style="font-size:11px;color:#64748b;background:#f1f5f9;padding:2px 8px;border-radius:6px;margin-left:4px;">${medal}${rank}位 / ${total}か国</span>`;
+      };
+
       document.getElementById('stats').innerHTML =
-        `<span>🗺 面積: ${areaStr}</span><span>👥 人口: ${pop}</span>`;
+        `<span>🗺 面積: ${areaStr}${rankBadge(areaRank)}</span>` +
+        `<span>👥 人口: ${pop}${rankBadge(popRank)}</span>`;
+
+      // 人口密度
+      if (d[0] > 0 && d[1] > 0) {
+        const dens = d[1] / d[0];
+        const densStr = dens >= 1000 ? `${dens.toFixed(0)} 人/km²`
+                      : dens >= 10   ? `${dens.toFixed(1)} 人/km²`
+                      :                `${dens.toFixed(2)} 人/km²`;
+        document.getElementById('stats').innerHTML +=
+          `<span>🏙 人口密度: ${densStr}${rankBadge(densityRank)}</span>`;
+      }
     } else {
       document.getElementById('stats').innerHTML = '';
     }
@@ -8078,6 +8103,27 @@ function showFlag(q) {
     document.getElementById('pop-siblings-label').textContent='';
     document.getElementById('pop-siblings-list').innerHTML='';
   }
+}
+
+// ランキング計算（初回のみ実行してキャッシュ）
+let _ranksCache = null;
+function calcRanks() {
+  if (_ranksCache) return _ranksCache;
+  const entries = Object.entries(COUNTRY_DATA);
+  const total = entries.length;
+
+  const areaList    = entries.filter(([,d]) => d[0] > 0).sort((a,b) => b[1][0] - a[1][0]);
+  const popList     = entries.filter(([,d]) => d[1] > 0).sort((a,b) => b[1][1] - a[1][1]);
+  const densityList = entries.filter(([,d]) => d[0] > 0 && d[1] > 0)
+                             .sort((a,b) => (b[1][1]/b[1][0]) - (a[1][1]/a[1][0]));
+
+  const area = {}, pop = {}, density = {};
+  areaList.forEach(([code], i)    => area[code]    = i + 1);
+  popList.forEach(([code], i)     => pop[code]     = i + 1);
+  densityList.forEach(([code], i) => density[code] = i + 1);
+
+  _ranksCache = { area, pop, density, total };
+  return _ranksCache;
 }
 
 function showSiblings(currentCode, area) {

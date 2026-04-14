@@ -8371,12 +8371,18 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
 
   function startRecognition(lang) {
     if (!active) return;
+
+    // 前のインスタンスを確実に破棄してから新規作成
+    if (currentRec) { try { currentRec.abort(); } catch(e){} currentRec = null; }
+
     const rec = new SpeechRecognition();
     rec.continuous = false;
     rec.interimResults = false;
     rec.maxAlternatives = 5;
     rec.lang = lang;
     currentRec = rec;
+
+    let handled = false; // onresult/onerrorで処理済みかどうか
 
     rec.onstart = () => {
       activeBtn().classList.add('listening');
@@ -8387,6 +8393,7 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
     };
 
     rec.onresult = (e) => {
+      handled = true;
       let found = null;
       for (let i = 0; i < e.results[0].length; i++) {
         const t = e.results[0][i].transcript.trim();
@@ -8402,24 +8409,44 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
       } else {
         attemptCount++;
         micStatus.textContent = `「${transcript}」は見つかりません。もう一度どうぞ... [${attemptCount}回目]`;
-        const sid1=sessionId; setTimeout(() => { if (active && sessionId===sid1) startRecognition(lang); }, 800);
       }
     };
 
     rec.onerror = (e) => {
+      handled = true;
       if (!active) return;
       if (e.error === 'not-allowed') {
         micStatus.textContent = 'マイクの使用を許可してください';
         stopAll(); return;
       }
-      attemptCount++;
-      const label = lang === 'ja-JP' ? '日本語' : 'English';
-      micStatus.textContent = `聞き取れませんでした。もう一度どうぞ（${label}）... [${attemptCount}回目]`;
-      const sid2=sessionId; setTimeout(() => { if (active && sessionId===sid2) startRecognition(lang); }, 600);
+      // no-speech などは onend に任せてリトライ
+      if (e.error !== 'no-speech') {
+        attemptCount++;
+        const label = lang === 'ja-JP' ? '日本語' : 'English';
+        micStatus.textContent = `聞き取れませんでした。もう一度どうぞ（${label}）... [${attemptCount}回目]`;
+      }
     };
 
-    rec.onend = () => {};
-    rec.start();
+    // onend で必ずリトライを判断（onerror の後も必ず呼ばれる）
+    rec.onend = () => {
+      currentRec = null;
+      if (!active) return;
+      if (handled && !active) return;
+      // 成功済み（stopAllが呼ばれた）なら何もしない
+      const sid = sessionId;
+      setTimeout(() => {
+        if (active && sessionId === sid) startRecognition(lang);
+      }, 500);
+    };
+
+    try {
+      rec.start();
+    } catch(e) {
+      // start()が失敗した場合も少し待ってリトライ
+      currentRec = null;
+      const sid = sessionId;
+      setTimeout(() => { if (active && sessionId === sid) startRecognition(lang); }, 800);
+    }
   }
 
   // stopAll はグローバルで定義済み

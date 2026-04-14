@@ -8041,18 +8041,45 @@ const SPECIAL_ENTRIES = {
   },
 };
 const SPECIAL_EN = {
+  // 手入力・正式表記
   "south korea & north korea": "韓国と北朝鮮",
+  "south korea and north korea": "韓国と北朝鮮",
   "korea": "韓国と北朝鮮",
   "china & taiwan": "中国と台湾",
+  "china and taiwan": "中国と台湾",
   "russia & ukraine": "ロシアとウクライナ",
+  "russia and ukraine": "ロシアとウクライナ",
   "earth": "earth",
   "地球": "earth",
+  // 音声認識のゆらぎ対応
+  "ers": "earth", "ur": "earth", "us": "earth", "earths": "earth",
+  "hurt": "earth", "birth": "earth", "worth": "earth",
+  "south korea north korea": "韓国と北朝鮮",
+  "korea north korea": "韓国と北朝鮮",
+  "china taiwan": "中国と台湾",
+  "russia ukraine": "ロシアとウクライナ",
 };
 
 function lookupSpecial(q) {
-  const sl = q.trim().toLowerCase();
-  if (SPECIAL_ENTRIES[q.trim()]) return SPECIAL_ENTRIES[q.trim()];
+  const s  = q.trim();
+  const sl = s.toLowerCase();
+
+  // そのまま一致
+  if (SPECIAL_ENTRIES[s]) return SPECIAL_ENTRIES[s];
   if (SPECIAL_EN[sl] && SPECIAL_ENTRIES[SPECIAL_EN[sl]]) return SPECIAL_ENTRIES[SPECIAL_EN[sl]];
+
+  // 音声認識の正規化：「&」「と」「and」を統一して再検索
+  const normalized = sl
+    .replace(/\s*&\s*/g, ' and ')
+    .replace(/　/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  if (SPECIAL_EN[normalized] && SPECIAL_ENTRIES[SPECIAL_EN[normalized]]) return SPECIAL_ENTRIES[SPECIAL_EN[normalized]];
+
+  // 「韓国と北朝鮮」などの日本語「と」も対応
+  const normalizedJa = s.replace(/\s*と\s*/g, 'と').trim();
+  if (SPECIAL_ENTRIES[normalizedJa]) return SPECIAL_ENTRIES[normalizedJa];
+
   return null;
 }
 

@@ -8024,9 +8024,8 @@ for (const r of db) { jaMap[r[0]]=r; enMap[r[1].toLowerCase()]=r; codeMap[r[2]]=
 const SPECIAL_ENTRIES = {
   "earth": {
     ja: "地球", en: "Earth",
-    type: "image",
-    url: "https://eoimages.gsfc.nasa.gov/images/imagerecords/57000/57723/globe_east_540.jpg",
-    credit: "NASA / Blue Marble"
+    type: "earth",
+    credit: "🌍 Earth"
   },
   "韓国と北朝鮮": {
     ja: "韓国と北朝鮮", en: "South Korea & North Korea",
@@ -8093,10 +8092,68 @@ function showSpecial(entry) {
   document.getElementById('pop-siblings-label').textContent = '';
   document.getElementById('pop-siblings-list').innerHTML = '';
 
-  if (entry.type === 'image') {
-    // 地球写真
-    box.style.width = '360px';
-    box.style.height = '360px';
+  if (entry.type === 'earth') {
+    // SVGで描いた地球（オフライン対応）
+    const size = 300;
+    box.style.width  = size + 'px';
+    box.style.height = size + 'px';
+    box.style.borderRadius = '50%';
+    box.style.overflow = 'hidden';
+    box.style.background = 'transparent';
+    box.innerHTML = `<svg width="${size}" height="${size}" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="oceanGrad" cx="40%" cy="35%" r="65%">
+      <stop offset="0%"   stop-color="#6ab4f5"/>
+      <stop offset="50%"  stop-color="#1a6faf"/>
+      <stop offset="100%" stop-color="#0a2e5c"/>
+    </radialGradient>
+    <radialGradient id="glowGrad" cx="38%" cy="32%" r="60%">
+      <stop offset="0%"   stop-color="white" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="white" stop-opacity="0"/>
+    </radialGradient>
+    <clipPath id="earthClip">
+      <circle cx="150" cy="150" r="148"/>
+    </clipPath>
+  </defs>
+  <!-- 海 -->
+  <circle cx="150" cy="150" r="148" fill="url(#oceanGrad)"/>
+  <!-- 大陸 -->
+  <g clip-path="url(#earthClip)" fill="#4a9e5c" opacity="0.92">
+    <!-- ユーラシア -->
+    <path d="M130,60 Q160,50 200,58 Q240,65 255,85 Q265,105 260,120 Q250,135 235,140 Q215,148 200,145 Q185,155 175,165 Q160,170 148,162 Q135,155 125,145 Q110,138 105,120 Q100,100 110,80 Z"/>
+    <!-- アフリカ -->
+    <path d="M145,165 Q160,158 172,168 Q182,180 180,200 Q178,225 168,242 Q158,255 148,250 Q138,242 133,225 Q128,205 132,185 Q136,170 145,165 Z"/>
+    <!-- 北米 -->
+    <path d="M45,70 Q70,58 95,68 Q112,78 115,95 Q118,115 108,130 Q95,142 78,138 Q60,132 48,115 Q36,95 45,70 Z"/>
+    <!-- 南米 -->
+    <path d="M82,148 Q98,140 108,152 Q115,168 112,192 Q108,218 98,235 Q88,245 78,238 Q68,228 65,208 Q62,185 68,165 Q73,152 82,148 Z"/>
+    <!-- オーストラリア -->
+    <path d="M218,190 Q240,182 255,192 Q265,205 260,220 Q252,232 238,235 Q222,235 212,222 Q205,208 210,197 Z"/>
+    <!-- 日本・東南アジア -->
+    <path d="M238,110 Q248,106 252,114 Q254,122 246,126 Q238,128 234,120 Q232,113 238,110 Z"/>
+    <path d="M225,130 Q232,125 238,132 Q240,140 234,144 Q226,145 222,138 Q220,132 225,130 Z"/>
+    <!-- 北極・グリーンランド -->
+    <path d="M148,42 Q162,36 172,44 Q178,52 172,60 Q163,65 152,60 Q143,54 148,42 Z"/>
+    <path d="M92,48 Q102,42 110,50 Q114,58 108,64 Q100,67 93,60 Q88,53 92,48 Z"/>
+  </g>
+  <!-- 雲 -->
+  <g clip-path="url(#earthClip)" fill="white" opacity="0.45">
+    <ellipse cx="85"  cy="95"  rx="32" ry="10" transform="rotate(-20,85,95)"/>
+    <ellipse cx="200" cy="78"  rx="28" ry="9"  transform="rotate(15,200,78)"/>
+    <ellipse cx="165" cy="195" rx="35" ry="11" transform="rotate(-10,165,195)"/>
+    <ellipse cx="60"  cy="175" rx="25" ry="8"  transform="rotate(25,60,175)"/>
+    <ellipse cx="240" cy="155" rx="22" ry="8"  transform="rotate(-5,240,155)"/>
+    <ellipse cx="120" cy="238" rx="30" ry="9"  transform="rotate(10,120,238)"/>
+  </g>
+  <!-- 光沢 -->
+  <circle cx="150" cy="150" r="148" fill="url(#glowGrad)"/>
+  <!-- 縁の影 -->
+  <circle cx="150" cy="150" r="148" fill="none" stroke="#0a2e5c" stroke-width="2" opacity="0.5"/>
+</svg>`;
+
+  } else if (entry.type === 'image') {
+    box.style.width = '300px';
+    box.style.height = '300px';
     box.style.borderRadius = '50%';
     box.style.overflow = 'hidden';
     box.style.background = '#000';

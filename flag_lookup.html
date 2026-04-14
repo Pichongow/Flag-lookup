@@ -8025,8 +8025,8 @@ const SPECIAL_ENTRIES = {
   "earth": {
     ja: "地球", en: "Earth",
     type: "image",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/The_Earth_seen_from_Apollo_17.jpg/480px-The_Earth_seen_from_Apollo_17.jpg",
-    credit: "NASA / Apollo 17"
+    url: "https://eoimages.gsfc.nasa.gov/images/imagerecords/57000/57723/globe_east_540.jpg",
+    credit: "NASA / Blue Marble"
   },
   "韓国と北朝鮮": {
     ja: "韓国と北朝鮮", en: "South Korea & North Korea",
@@ -8147,9 +8147,10 @@ function showFlag(q) {
 
   const found = lookup(q);
   const box = document.getElementById('flag-box');
-  // 地球表示時の丸スタイルをリセット
+  // 地球表示時のスタイルをすべてリセット
   box.style.borderRadius = '0';
   box.style.overflow = 'hidden';
+  box.style.background = '#e8edf2';
   if (found && SVG_FLAGS[found[2]]) {
     const code = found[2];
     const r = FLAG_RATIOS[code] || 1.5; // 幅/高さ

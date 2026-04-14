@@ -8028,6 +8028,8 @@ function normalize(s) {
 function lookup(q) {
   const s=q.trim(), sl=s.toLowerCase();
   const sn=normalize(s), sln=normalize(sl);
+  // 特殊エントリも検索対象に含める（音声認識対応）
+  if (lookupSpecial(s)) return [s, s, '__special__'];
   if (jaMap[s]) return jaMap[s];
   if (enMap[sl]) return enMap[sl];
   if (aliases[sl] && codeMap[aliases[sl]]) return codeMap[aliases[sl]];
@@ -8042,10 +8044,113 @@ function lookup(q) {
   return null;
 }
 
+// ===== 特殊エントリ =====
+const SPECIAL_ENTRIES = {
+  "earth": {
+    ja: "地球", en: "Earth",
+    type: "image",
+    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/The_Earth_seen_from_Apollo_17.jpg/480px-The_Earth_seen_from_Apollo_17.jpg",
+    credit: "NASA / Apollo 17"
+  },
+  "韓国と北朝鮮": {
+    ja: "韓国と北朝鮮", en: "South Korea & North Korea",
+    type: "dual", codes: ["kr","kp"]
+  },
+  "中国と台湾": {
+    ja: "中国と台湾", en: "China & Taiwan",
+    type: "dual", codes: ["cn","tw"]
+  },
+  "ロシアとウクライナ": {
+    ja: "ロシアとウクライナ", en: "Russia & Ukraine",
+    type: "dual", codes: ["ru","ua"]
+  },
+};
+// 英語キーも登録
+const SPECIAL_EN = {
+  "south korea & north korea": "韓国と北朝鮮",
+  "korea": "韓国と北朝鮮",
+  "china & taiwan": "中国と台湾",
+  "russia & ukraine": "ロシアとウクライナ",
+  "earth": "earth",
+  "地球": "earth",
+};
+
+function lookupSpecial(q) {
+  const sl = q.trim().toLowerCase();
+  if (SPECIAL_ENTRIES[q.trim()]) return SPECIAL_ENTRIES[q.trim()];
+  if (SPECIAL_EN[sl] && SPECIAL_ENTRIES[SPECIAL_EN[sl]]) return SPECIAL_ENTRIES[SPECIAL_EN[sl]];
+  return null;
+}
+
+function showSpecial(entry) {
+  const box = document.getElementById('flag-box');
+  document.getElementById('name-en').textContent = entry.en;
+  document.getElementById('name-ja').textContent = entry.ja;
+  document.getElementById('hint').textContent = '';
+  document.getElementById('ratio-info').textContent = '';
+  document.getElementById('stats').innerHTML = '';
+  document.getElementById('siblings-label').textContent = '';
+  document.getElementById('siblings-list').innerHTML = '';
+  document.getElementById('pop-siblings-label').textContent = '';
+  document.getElementById('pop-siblings-list').innerHTML = '';
+
+  if (entry.type === 'image') {
+    // 地球写真
+    box.style.width = '360px';
+    box.style.height = '360px';
+    box.style.borderRadius = '50%';
+    box.style.overflow = 'hidden';
+    box.style.background = '#000';
+    box.innerHTML = `<img src="${entry.url}" alt="${entry.en}"
+      style="width:100%;height:100%;object-fit:cover;"
+      onerror="this.parentNode.innerHTML='<span style=color:#999;font-size:13px>画像を読み込めませんでした</span>'"
+    >`;
+    document.getElementById('ratio-info').textContent = entry.credit;
+
+  } else if (entry.type === 'dual') {
+    // 2枚並び
+    const [c1, c2] = entry.codes;
+    const r1 = FLAG_RATIOS[c1] || 1.5;
+    const r2 = FLAG_RATIOS[c2] || 1.5;
+    const W = 172; // 2枚並びなので半分弱
+    const H1 = Math.round(W / r1);
+    const H2 = Math.round(W / r2);
+    const H  = Math.max(H1, H2);
+    box.style.width  = (W * 2 + 16) + 'px';
+    box.style.height = H + 'px';
+    box.style.borderRadius = '0';
+    box.style.background = '#e8edf2';
+    box.innerHTML = `
+      <div style="display:flex;gap:16px;align-items:center;justify-content:center;width:100%;height:100%;">
+        <div style="width:${W}px;height:${H1}px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.15);">
+          ${SVG_FLAGS[c1]}
+        </div>
+        <div style="width:${W}px;height:${H2}px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.15);">
+          ${SVG_FLAGS[c2]}
+        </div>
+      </div>`;
+    // SVGのサイズを調整
+    const svgs = box.querySelectorAll('svg');
+    svgs.forEach((svg, i) => {
+      const w = W, h = i === 0 ? H1 : H2;
+      svg.style.width  = w + 'px';
+      svg.style.height = h + 'px';
+    });
+  }
+}
+
 function showFlag(q) {
   if (!q.trim()) return;
+
+  // 特殊エントリチェック（地球・2枚並び国旗）
+  const special = lookupSpecial(q);
+  if (special) { showSpecial(special); return; }
+
   const found = lookup(q);
   const box = document.getElementById('flag-box');
+  // 地球表示時の丸スタイルをリセット
+  box.style.borderRadius = '0';
+  box.style.overflow = 'hidden';
   if (found && SVG_FLAGS[found[2]]) {
     const code = found[2];
     const r = FLAG_RATIOS[code] || 1.5; // 幅/高さ

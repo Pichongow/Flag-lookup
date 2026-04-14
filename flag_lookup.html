@@ -8171,7 +8171,7 @@ function showSiblings(currentCode, area) {
   // 面積が大きい順にソート
   sibs.sort((a, b) => b.area - a.area);
 
-  labelEl.textContent = '📐 面積が近い国';
+  labelEl.textContent = '🗺 面積が近い国';
 
   for (const sib of sibs) {
     const r    = db.find(row => row[2] === sib.code);

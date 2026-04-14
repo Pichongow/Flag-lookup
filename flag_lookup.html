@@ -8051,13 +8051,29 @@ const SPECIAL_EN = {
   "russia and ukraine": "ロシアとウクライナ",
   "earth": "earth",
   "地球": "earth",
-  // 音声認識のゆらぎ対応
+  "globe": "earth",
+  "world": "earth",
+  "planet": "earth",
+  "planet earth": "earth",
+  "the world": "earth",
+  "the globe": "earth",
+  "may peace prevail on earth": "earth",
+  "peace on earth": "earth",
+  "peace": "earth",
+  // Earthの音声誤認識パターン（多数登録）
   "ers": "earth", "ur": "earth", "us": "earth", "earths": "earth",
-  "hurt": "earth", "birth": "earth", "worth": "earth",
+  "hurt": "earth", "birth": "earth", "worth": "earth", "her": "earth",
+  "heard": "earth", "herb": "earth", "urge": "earth", "err": "earth",
+  "irk": "earth", "irth": "earth", "erth": "earth", "arth": "earth",
+  "the earth": "earth", "a earth": "earth", "an earth": "earth",
+  // &なし・andなしパターン
   "south korea north korea": "韓国と北朝鮮",
   "korea north korea": "韓国と北朝鮮",
+  "north korea south korea": "韓国と北朝鮮",
   "china taiwan": "中国と台湾",
+  "taiwan china": "中国と台湾",
   "russia ukraine": "ロシアとウクライナ",
+  "ukraine russia": "ロシアとウクライナ",
 };
 
 function lookupSpecial(q) {
@@ -8536,9 +8552,13 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
     rec.onresult = (e) => {
       handled = true;
       let found = null;
+      const allTranscripts = [];
       for (let i = 0; i < e.results[0].length; i++) {
         const t = e.results[0][i].transcript.trim();
-        if (lookup(t)) { found = t; break; }
+        allTranscripts.push(t);
+        // 特殊エントリを先にチェック
+        if (!found && lookupSpecial(t)) { found = t; }
+        if (!found && lookup(t)) { found = t; }
       }
       const transcript = found || e.results[0][0].transcript.trim();
       document.getElementById('inp').value = transcript;
@@ -8549,7 +8569,9 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
         stopAll();
       } else {
         attemptCount++;
-        micStatus.textContent = `「${transcript}」は見つかりません。もう一度どうぞ... [${attemptCount}回目]`;
+        // 全候補を表示（デバッグ用）
+        const candidates = allTranscripts.slice(0,3).join(' / ');
+        micStatus.textContent = `候補:「${candidates}」見つかりません [${attemptCount}回目]`;
       }
     };
 

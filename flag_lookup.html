@@ -8299,6 +8299,9 @@ document.getElementById('inp').addEventListener('keydown',e=>{if(e.key==='Enter'
 document.getElementById('inp').addEventListener('input',e=>suggest(e.target.value));
 document.getElementById('inp').addEventListener('focus',()=>{ stopAll(); document.getElementById('inp').value=''; document.getElementById('suggest').innerHTML=''; });
 
+// ランキング計算をページ読み込み時に事前実行してキャッシュしておく
+window.addEventListener('load', () => { calcRanks(); });
+
 // LINE・Instagram等の内蔵ブラウザ検出 → バナー表示
 (function() {
   const ua = navigator.userAgent;

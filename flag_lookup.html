@@ -8335,18 +8335,20 @@ function stopAll() {
 if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
-  // ページ読み込み時にマイク許可を事前取得
-  // 許可が出るまでボタンをグレーアウト＆メッセージ表示
-  micJa.disabled = true;
-  micEn.disabled = true;
-  micJa.style.opacity = '0.5';
-  micEn.style.opacity = '0.5';
-  micStatus.textContent = '🎤 マイクのアクセスを確認中...';
+  // 内蔵ブラウザ（LINE等）かどうか判定
+  const ua = navigator.userAgent;
+  const isInApp = /Line\/|FBAN|FBAV|Instagram|Snapchat|Twitter|MicroMessenger/.test(ua)
+               || (/iP(hone|od|ad)/.test(ua) && !/Safari\//.test(ua));
 
-  if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+  if (!isInApp && navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+    // 通常ブラウザのみ：ページ読み込み時にマイク許可を事前取得
+    micJa.disabled = true;
+    micEn.disabled = true;
+    micJa.style.opacity = '0.5';
+    micEn.style.opacity = '0.5';
+    micStatus.textContent = '🎤 マイクのアクセスを確認中...';
     navigator.mediaDevices.getUserMedia({ audio: true })
       .then(stream => {
-        // 許可取得後すぐにストリームを止める（録音はSpeechRecognitionに任せる）
         stream.getTracks().forEach(t => t.stop());
         micJa.disabled = false;
         micEn.disabled = false;
@@ -8359,14 +8361,8 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
         micEn.disabled = true;
         micStatus.textContent = '⚠️ マイクのアクセスが拒否されました。ブラウザの設定をご確認ください。';
       });
-  } else {
-    // getUserMedia非対応でもとりあえずボタンは有効にする
-    micJa.disabled = false;
-    micEn.disabled = false;
-    micJa.style.opacity = '';
-    micEn.style.opacity = '';
-    micStatus.textContent = '';
   }
+  // 内蔵ブラウザの場合はボタンをそのまま有効にしておく（バナーで案内済み）
 
   function activeBtn() { return activeLang === 'ja-JP' ? micJa : micEn; }
 

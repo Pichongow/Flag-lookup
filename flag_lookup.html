@@ -8561,7 +8561,9 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
         if (!found && lookup(t)) { found = t; }
       }
       const transcript = found || e.results[0][0].transcript.trim();
-      document.getElementById('inp').value = transcript;
+      // 各単語の先頭を大文字に整形
+      const displayTranscript = transcript.replace(/\b\w/g, c => c.toUpperCase());
+      document.getElementById('inp').value = displayTranscript;
 
       if (found) {
         micStatus.textContent = `✅ 認識: 「${transcript}」`;

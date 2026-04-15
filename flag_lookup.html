@@ -8561,8 +8561,12 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
         if (!found && lookup(t)) { found = t; }
       }
       const transcript = found || e.results[0][0].transcript.trim();
-      // 各単語の先頭を大文字に整形
-      const displayTranscript = transcript.replace(/\b\w/g, c => c.toUpperCase());
+      // 各単語の先頭を大文字に（ただし前置詞・接続詞・冠詞は小文字）
+      const lowerWords = new Set(['a','an','the','and','but','or','nor','for','so','yet','on','in','at','to','by','of','up','as','is']);
+      const displayTranscript = transcript
+        .replace(/\b\w/g, c => c.toUpperCase())
+        .replace(/\b(\w+)\b/g, (w, m) => lowerWords.has(m.toLowerCase()) ? m.toLowerCase() : w)
+        .replace(/^\w/, c => c.toUpperCase()); // 先頭は必ず大文字
       document.getElementById('inp').value = displayTranscript;
 
       if (found) {

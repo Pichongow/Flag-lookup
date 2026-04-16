@@ -8190,6 +8190,39 @@ function showSpecial(entry) {
   }
 }
 
+// 認識テキストの中から国名を部分抽出する
+function extractCountry(text) {
+  const s  = text.trim();
+  const sl = s.toLowerCase();
+
+  // 特殊エントリを先にチェック（複数単語のものから順に）
+  for (const key of Object.keys(SPECIAL_EN).sort((a,b) => b.length - a.length)) {
+    if (sl.includes(key)) return key;
+  }
+
+  // 日本語：dbの日本語名が含まれているか（長い名前から順に）
+  const sorted = [...db].sort((a,b) => b[0].length - a[0].length);
+  for (const r of sorted) {
+    if (r[0].length >= 2 && s.includes(r[0])) return r[0];
+  }
+
+  // 英語：dbの英語名が含まれているか（長い名前から順に）
+  const sortedEn = [...db].sort((a,b) => b[1].length - a[1].length);
+  for (const r of sortedEn) {
+    if (r[1].length >= 4 && sl.includes(r[1].toLowerCase())) return r[1];
+  }
+
+  // エイリアスが含まれているか
+  for (const [alias, code] of Object.entries(aliases)) {
+    if (alias.length >= 3 && sl.includes(alias)) {
+      const r = codeMap[code];
+      if (r) return r[0];
+    }
+  }
+
+  return null;
+}
+
 function showFlag(q) {
   if (!q.trim()) return;
 
@@ -8552,30 +8585,48 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
     rec.onresult = (e) => {
       handled = true;
       let found = null;
+      let foundByExtract = null; // 部分抽出でヒットした国
       const allTranscripts = [];
+
       for (let i = 0; i < e.results[0].length; i++) {
         const t = e.results[0][i].transcript.trim();
         allTranscripts.push(t);
-        // 特殊エントリを先にチェック
+        // 完全一致を先にチェック
         if (!found && lookupSpecial(t)) { found = t; }
         if (!found && lookup(t)) { found = t; }
       }
+
+      // 完全一致しなかった場合、認識結果の中から国名を部分抽出
+      if (!found) {
+        for (const t of allTranscripts) {
+          const extracted = extractCountry(t);
+          if (extracted) { foundByExtract = extracted; break; }
+        }
+      }
+
       const transcript = found || e.results[0][0].transcript.trim();
-      // 各単語の先頭を大文字に（ただし前置詞・接続詞・冠詞は小文字）
       const lowerWords = new Set(['a','an','the','and','but','or','nor','for','so','yet','on','in','at','to','by','of','up','as','is']);
       const displayTranscript = transcript
         .replace(/\b\w/g, c => c.toUpperCase())
         .replace(/\b(\w+)\b/g, (w, m) => lowerWords.has(m.toLowerCase()) ? m.toLowerCase() : w)
-        .replace(/^\w/, c => c.toUpperCase()); // 先頭は必ず大文字
+        .replace(/^\w/, c => c.toUpperCase());
       document.getElementById('inp').value = displayTranscript;
 
       if (found) {
-        micStatus.textContent = `✅ 認識: 「${transcript}」`;
+        micStatus.textContent = `✅ 認識: 「${displayTranscript}」`;
         showFlag(transcript);
+        stopAll();
+      } else if (foundByExtract) {
+        // 部分抽出でヒット
+        const extractDisplay = foundByExtract.replace(/\b\w/g, c => c.toUpperCase())
+          .replace(/\b(\w+)\b/g, (w, m) => lowerWords.has(m.toLowerCase()) ? m.toLowerCase() : w)
+          .replace(/^\w/, c => c.toUpperCase());
+        document.getElementById('inp').value = extractDisplay;
+        micStatus.textContent = `✅ 認識: 「${displayTranscript}」→「${extractDisplay}」`;
+        showFlag(foundByExtract);
         stopAll();
       } else {
         attemptCount++;
-        // 全候補を表示（デバッグ用）
         const candidates = allTranscripts.slice(0,3).join(' / ');
         micStatus.textContent = `候補:「${candidates}」見つかりません [${attemptCount}回目]`;
       }

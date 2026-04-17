@@ -8650,12 +8650,14 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
     // onend で必ずリトライを判断（onerror の後も必ず呼ばれる）
     rec.onend = () => {
       currentRec = null;
+      // active=falseなら停止済み（成功・手動停止）なのでリトライしない
       if (!active) return;
-      if (handled && !active) return;
-      // 成功済み（stopAllが呼ばれた）なら何もしない
+      // このインスタンスのlangと現在のactiveLangが違う場合はリトライしない
+      // （言語切り替え時に古いonendが発火するケース）
+      if (activeLang !== lang) return;
       const sid = sessionId;
       setTimeout(() => {
-        if (active && sessionId === sid) startRecognition(lang);
+        if (active && sessionId === sid && activeLang === lang) startRecognition(lang);
       }, 500);
     };
 
@@ -8678,13 +8680,18 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
       stopAll();
       return;
     }
-    // 別のボタンや新規起動
+    // 別のボタンや新規起動：stopAll後に古いonendが発火する可能性があるため
+    // activeLangを先に新しい言語にセットしてからstopAllを呼ぶ
     stopAll();
     active = true;
     activeLang = lang;
     attemptCount = 0;
     activeBtn().textContent = '⏹ 停止';
-    startRecognition(lang);
+    // 少し待ってから起動（前インスタンスのonendが発火し終わるのを待つ）
+    const sid = sessionId;
+    setTimeout(() => {
+      if (active && sessionId === sid && activeLang === lang) startRecognition(lang);
+    }, 300);
   }
 
   micJa.addEventListener('click', () => startLang('ja-JP'));

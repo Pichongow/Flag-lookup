@@ -7960,6 +7960,7 @@ const aliases = {
   "蘭":"nl","瑞":"se","瑞西":"ch","濠":"au","加":"ca","印":"in","西":"es","葡":"pt",
   "アメリカ合衆国":"us","米国":"us","英国":"gb","仏国":"fr","独国":"de",
   "伊国":"it","露国":"ru","中国":"cn","韓国":"kr","北朝鮮":"kp",
+  "大韓民国":"kr","朝鮮民主主義人民共和国":"kp",
   "スイス":"ch","オランダ":"nl","ポルトガル":"pt","スウェーデン":"se",
 };
 
@@ -8044,11 +8045,25 @@ const SPECIAL_EN = {
   // 手入力・正式表記
   "south korea & north korea": "韓国と北朝鮮",
   "south korea and north korea": "韓国と北朝鮮",
+  "north korea & south korea": "韓国と北朝鮮",
+  "north korea and south korea": "韓国と北朝鮮",
   "korea": "韓国と北朝鮮",
   "china & taiwan": "中国と台湾",
   "china and taiwan": "中国と台湾",
+  "taiwan & china": "中国と台湾",
+  "taiwan and china": "中国と台湾",
   "russia & ukraine": "ロシアとウクライナ",
   "russia and ukraine": "ロシアとウクライナ",
+  "ukraine & russia": "ロシアとウクライナ",
+  "ukraine and russia": "ロシアとウクライナ",
+  // 日本語逆順
+  "北朝鮮と韓国": "韓国と北朝鮮",
+  "台湾と中国": "中国と台湾",
+  "ウクライナとロシア": "ロシアとウクライナ",
+  "大韓民国と北朝鮮": "韓国と北朝鮮",
+  "北朝鮮と大韓民国": "韓国と北朝鮮",
+  "大韓民国と朝鮮民主主義人民共和国": "韓国と北朝鮮",
+  "朝鮮民主主義人民共和国と大韓民国": "韓国と北朝鮮",
   "earth": "earth",
   "地球": "earth",
   "globe": "earth",
@@ -8066,13 +8081,15 @@ const SPECIAL_EN = {
   "heard": "earth", "herb": "earth", "urge": "earth", "err": "earth",
   "irk": "earth", "irth": "earth", "erth": "earth", "arth": "earth",
   "the earth": "earth", "a earth": "earth", "an earth": "earth",
-  // &なし・andなしパターン
+  // &なし・andなしパターン（順・逆）
   "south korea north korea": "韓国と北朝鮮",
   "korea north korea": "韓国と北朝鮮",
   "north korea south korea": "韓国と北朝鮮",
+  "north korea korea": "韓国と北朝鮮",
   "china taiwan": "中国と台湾",
   "taiwan china": "中国と台湾",
   "russia ukraine": "ロシアとウクライナ",
+  "ukraine russia": "ロシアとウクライナ",
   "ukraine russia": "ロシアとウクライナ",
 };
 

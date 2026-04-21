@@ -8704,6 +8704,14 @@ function extractPeaceCountry(q) {
   return null;
 }
 
+// Peace Modeに関係なく直接表示（兄弟国クリック用）
+function showFlagDirect(q) {
+  const saved = peaceModeOn;
+  peaceModeOn = false;
+  showFlag(q);
+  peaceModeOn = saved;
+}
+
 function showFlag(q) {
   if (!q.trim()) return;
 
@@ -8902,7 +8910,7 @@ function showSiblings(currentCode, area) {
     btn.appendChild(nameDiv);
     btn.addEventListener('click', () => {
       document.getElementById('inp').value = r[0];
-      showFlag(r[0]);
+      showFlagDirect(r[0]);
     });
     listEl.appendChild(btn);
   }
@@ -8975,7 +8983,7 @@ function showPopSiblings(currentCode, pop) {
     btn.appendChild(nameDiv);
     btn.addEventListener('click', () => {
       document.getElementById('inp').value = r[0];
-      showFlag(r[0]);
+      showFlagDirect(r[0]);
     });
     listEl.appendChild(btn);
   }

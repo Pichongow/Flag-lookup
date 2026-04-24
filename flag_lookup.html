@@ -86,7 +86,7 @@ h1 { font-size: 20px; font-weight: 600; color: #1a1a1a; margin-bottom: 1.5rem; }
   <button class="ban-close" onclick="document.getElementById('browser-banner').style.display='none'">閉じる（手入力のみ使用）</button>
 </div>
 <div id="wrap">
-  <h1>🌍 国旗ルックアップ <span style="font-size:13px;font-weight:400;color:#999">197か国・正式縦横比対応</span></h1>
+  <h1>🌍 国旗ルックアップ <span style="font-size:13px;font-weight:400;color:#999">197か国・正式比率対応</span></h1>
   <button id="peace-btn" onclick="togglePeaceMode()">☮️ Peace Mode：OFF</button>
   <div id="peace-hint"></div>
   <div id="row">
@@ -7890,7 +7890,7 @@ const RATIO_LABELS = {
   "sy": "3:2",
   "sz": "3:2",
   "td": "3:2",
-  "tg": "2:1",
+  "tg": "φ:1（黄金比≈1.618:1）",
   "th": "3:2",
   "tj": "2:1",
   "tl": "2:1",
@@ -8761,7 +8761,7 @@ function showFlag(q) {
     document.getElementById('name-en').textContent = found[1];
     document.getElementById('name-ja').textContent = found[0];
     document.getElementById('hint').textContent = 'ISO 3166-1: ' + code.toUpperCase();
-    document.getElementById('ratio-info').textContent = '正式縦横比: ' + (RATIO_LABELS[code] || '3:2');
+    document.getElementById('ratio-info').textContent = '幅：高さ = ' + (RATIO_LABELS[code] || '3:2');
     const d = COUNTRY_DATA[code];
     if (d) {
       const JAPAN_AREA = 377975;

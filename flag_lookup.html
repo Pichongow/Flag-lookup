@@ -8578,33 +8578,41 @@ function showSpecial(entry) {
     document.getElementById('ratio-info').textContent = entry.credit;
 
   } else if (entry.type === 'dual') {
-    // 2枚並び
+    // 2枚並び：高さ220pxを基準に各国旗の幅を比率に応じて計算
     const [c1, c2] = entry.codes;
-    const r1 = FLAG_RATIOS[c1] || 1.5;
-    const r2 = FLAG_RATIOS[c2] || 1.5;
-    const W = 172; // 2枚並びなので半分弱
-    const H1 = Math.round(W / r1);
-    const H2 = Math.round(W / r2);
-    const H  = Math.max(H1, H2);
-    box.style.width  = (W * 2 + 16) + 'px';
+    const H = 220; // 高さ固定
+
+    // 幅を比率から計算（IMG_SIZESがあればそちらを優先）
+    const getW = (code) => {
+      if (IMG_SIZES[code]) return Math.round(IMG_SIZES[code][0] * H / IMG_SIZES[code][1]);
+      return Math.round(H * (FLAG_RATIOS[code] || 1.5));
+    };
+    const W1 = getW(c1);
+    const W2 = getW(c2);
+
+    // 国旗のHTMLを生成（IMG_FLAGSがあれば画像、なければSVG）
+    const flagHtml = (code, w, h) => {
+      if (IMG_FLAGS[code]) {
+        return `<img src="${IMG_FLAGS[code]}" width="${w}" height="${h}" style="display:block;box-shadow:0 1px 4px rgba(0,0,0,0.15);">`;
+      }
+      return `<div style="width:${w}px;height:${h}px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.15);">${SVG_FLAGS[code]}</div>`;
+    };
+
+    box.style.width  = (W1 + W2 + 16) + 'px';
     box.style.height = H + 'px';
     box.style.borderRadius = '0';
     box.style.background = '#e8edf2';
     box.innerHTML = `
       <div style="display:flex;gap:16px;align-items:center;justify-content:center;width:100%;height:100%;">
-        <div style="width:${W}px;height:${H1}px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.15);">
-          ${SVG_FLAGS[c1]}
-        </div>
-        <div style="width:${W}px;height:${H2}px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.15);">
-          ${SVG_FLAGS[c2]}
-        </div>
+        ${flagHtml(c1, W1, H)}
+        ${flagHtml(c2, W2, H)}
       </div>`;
-    // SVGのサイズを調整
+    // SVGのサイズを調整（SVGフォールバックの場合）
     const svgs = box.querySelectorAll('svg');
     svgs.forEach((svg, i) => {
-      const w = W, h = i === 0 ? H1 : H2;
+      const w = i === 0 ? W1 : W2;
       svg.style.width  = w + 'px';
-      svg.style.height = h + 'px';
+      svg.style.height = H + 'px';
     });
   }
 }

@@ -8578,40 +8578,46 @@ function showSpecial(entry) {
     document.getElementById('ratio-info').textContent = entry.credit;
 
   } else if (entry.type === 'dual') {
-    // 2枚並び：高さ220pxを基準に各国旗の幅を比率に応じて計算
+    // 2枚並び：高さ基準で両国旗を正式比率で表示
     const [c1, c2] = entry.codes;
-    const H = 220; // 高さ固定
 
-    // 幅を比率から計算（IMG_SIZESがあればそちらを優先）
-    const getW = (code) => {
-      if (IMG_SIZES[code]) return Math.round(IMG_SIZES[code][0] * H / IMG_SIZES[code][1]);
-      return Math.round(H * (FLAG_RATIOS[code] || 1.5));
+    // 各国旗の正式比率（幅/高さ）を取得
+    const getRatio = (code) => {
+      if (IMG_SIZES[code]) return IMG_SIZES[code][0] / IMG_SIZES[code][1];
+      return FLAG_RATIOS[code] || 1.5;
     };
-    const W1 = getW(c1);
-    const W2 = getW(c2);
+    const r1 = getRatio(c1);
+    const r2 = getRatio(c2);
 
-    // 国旗のHTMLを生成（IMG_FLAGSがあれば画像、なければSVG）
+    // 高さを決めて幅を計算、合計が360px以内に収まるよう調整
+    const GAP = 12;
+    const MAX_TOTAL_W = 360;
+    // H を求める: H*r1 + GAP + H*r2 <= MAX_TOTAL_W
+    const H = Math.min(220, Math.floor((MAX_TOTAL_W - GAP) / (r1 + r2)));
+    const W1 = Math.round(H * r1);
+    const W2 = Math.round(H * r2);
+
+    // 国旗のHTMLを生成
     const flagHtml = (code, w, h) => {
       if (IMG_FLAGS[code]) {
         return `<img src="${IMG_FLAGS[code]}" width="${w}" height="${h}" style="display:block;box-shadow:0 1px 4px rgba(0,0,0,0.15);">`;
       }
-      return `<div style="width:${w}px;height:${h}px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.15);">${SVG_FLAGS[code]}</div>`;
+      const svgDiv = `<div style="width:${w}px;height:${h}px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.15);">${SVG_FLAGS[code]}</div>`;
+      return svgDiv;
     };
 
-    box.style.width  = (W1 + W2 + 16) + 'px';
+    box.style.width  = (W1 + W2 + GAP) + 'px';
     box.style.height = H + 'px';
     box.style.borderRadius = '0';
     box.style.background = '#e8edf2';
     box.innerHTML = `
-      <div style="display:flex;gap:16px;align-items:center;justify-content:center;width:100%;height:100%;">
+      <div style="display:flex;gap:${GAP}px;align-items:center;justify-content:center;width:100%;height:100%;">
         ${flagHtml(c1, W1, H)}
         ${flagHtml(c2, W2, H)}
       </div>`;
-    // SVGのサイズを調整（SVGフォールバックの場合）
     const svgs = box.querySelectorAll('svg');
     svgs.forEach((svg, i) => {
-      const w = i === 0 ? W1 : W2;
-      svg.style.width  = w + 'px';
+      svg.style.width  = (i === 0 ? W1 : W2) + 'px';
       svg.style.height = H + 'px';
     });
   }
